@@ -77,15 +77,28 @@ type GargoylePet struct {
 }
 
 func (dk *Deathknight) NewGargoyle() *GargoylePet {
+	// Remove any hit that would be given by NocS as it does not translate to pets
+	nocsHit := 0.0
+	if dk.nervesOfColdSteelActive() {
+		nocsHit = (float64(dk.Talents.NervesOfColdSteel) / 8.0) * 17.0
+	}
 	gargoyle := &GargoylePet{
 		Pet: core.NewPet(
 			"Gargoyle",
 			&dk.Character,
-			gargoyleBaseStats,
+			stats.Stats{
+				stats.Stamina:  1000,
+				stats.SpellHit: -nocsHit * core.SpellHitRatingPerHitChance,
+			},
 			func(ownerStats stats.Stats) stats.Stats {
+				// Convert dk melee hit to garg spell hit
+				// We convert 8 melee hit to 17 spell hit (as thats how pets scale their hit/expertise)
+				ownerHitChance := (ownerStats[stats.MeleeHit] / core.MeleeHitRatingPerHitChance)
+				hitRatingFromOwner := ((ownerHitChance / 8.0) * 17.0) * core.SpellHitRatingPerHitChance
+
 				return stats.Stats{
 					stats.AttackPower: ownerStats[stats.AttackPower],
-					stats.SpellHit:    ownerStats[stats.SpellHit],
+					stats.SpellHit:    hitRatingFromOwner,
 					stats.SpellHaste:  (ownerStats[stats.MeleeHaste] / dk.PseudoStats.MeleeHasteRatingPerHastePercent) * core.HasteRatingPerHastePercent,
 				}
 			},
@@ -120,11 +133,6 @@ func (garg *GargoylePet) OnGCDReady(sim *core.Simulation) {
 	garg.DoNothing()
 }
 
-// These numbers are just rough guesses
-var gargoyleBaseStats = stats.Stats{
-	stats.Stamina: 1000,
-}
-
 func (garg *GargoylePet) registerGargoyleStrikeSpell() {
 	attackPowerModifier := (1.0 + 0.04*float64(garg.dkOwner.Talents.Impurity)) / 3.0
 	var outcomeApplier core.OutcomeApplier
@@ -154,5 +162,5 @@ func (garg *GargoylePet) registerGargoyleStrikeSpell() {
 			spell.DealDamage(sim, result)
 		},
 	})
-	outcomeApplier = garg.GargoyleStrike.OutcomeCritFixedChance(0.05)
+	outcomeApplier = garg.GargoyleStrike.OutcomeMagicCritFixedChance(0.05)
 }

@@ -239,7 +239,7 @@ dps_results: {
  value: {
   dps: 105.0593
   tps: 47.52796
-  hps: 4588.96178
+  hps: 4590.47457
  }
 }
 dps_results: {
@@ -285,9 +285,9 @@ dps_results: {
 dps_results: {
  key: "TestHoly-AllItems-GarbofFaith"
  value: {
-  dps: 94.1519
-  tps: 41.23921
-  hps: 3698.33611
+  dps: 97.35608
+  tps: 42.43348
+  hps: 3836.12473
  }
 }
 dps_results: {
@@ -429,9 +429,9 @@ dps_results: {
 dps_results: {
  key: "TestHoly-AllItems-RegaliaofFaith"
  value: {
-  dps: 92.46172
-  tps: 41.04016
-  hps: 3883.60274
+  dps: 94.30117
+  tps: 42.12069
+  hps: 4034.87451
  }
 }
 dps_results: {
@@ -477,17 +477,17 @@ dps_results: {
 dps_results: {
  key: "TestHoly-AllItems-SanctificationGarb"
  value: {
-  dps: 96.73642
-  tps: 41.92165
-  hps: 3816.65451
+  dps: 97.784
+  tps: 42.46191
+  hps: 3898.69152
  }
 }
 dps_results: {
  key: "TestHoly-AllItems-SanctificationRegalia"
  value: {
-  dps: 98.32542
-  tps: 42.54722
-  hps: 4070.27912
+  dps: 99.34345
+  tps: 43.14435
+  hps: 4169.73439
  }
 }
 dps_results: {
@@ -645,9 +645,9 @@ dps_results: {
 dps_results: {
  key: "TestHoly-Average-Default"
  value: {
-  dps: 102.22553
-  tps: 48.15232
-  hps: 4596.82793
+  dps: 102.02521
+  tps: 48.05818
+  hps: 4587.83877
  }
 }
 dps_results: {

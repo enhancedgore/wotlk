@@ -1,7 +1,6 @@
 package deathknight
 
 import (
-	"math"
 	"time"
 
 	"github.com/wowsims/wotlk/sim/core"
@@ -24,6 +23,23 @@ type GhoulPet struct {
 }
 
 func (dk *Deathknight) NewArmyGhoulPet(index int) *GhoulPet {
+	// Remove any hit that would be given by NocS as it does not translate to pets
+	nocsHit := 0.0
+	if dk.nervesOfColdSteelActive() {
+		nocsHit = float64(dk.Talents.NervesOfColdSteel)
+	}
+
+	armyGhoulPetBaseStats := stats.Stats{
+		stats.Agility:     856,
+		stats.Strength:    0,
+		stats.AttackPower: -20,
+
+		stats.MeleeHit:  -nocsHit * core.MeleeHitRatingPerHitChance,
+		stats.Expertise: -nocsHit * PetExpertiseScale * core.ExpertisePerQuarterPercentReduction,
+
+		stats.MeleeCrit: 3.2 * core.CritRatingPerCritChance,
+	}
+
 	ghoulPet := &GhoulPet{
 		Pet: core.NewPet(
 			"Army of the Dead", //+strconv.Itoa(index),
@@ -60,6 +76,23 @@ func (dk *Deathknight) NewArmyGhoulPet(index int) *GhoulPet {
 }
 
 func (dk *Deathknight) NewGhoulPet(permanent bool) *GhoulPet {
+	// Remove any hit that would be given by NocS as it does not translate to pets
+	nocsHit := 0.0
+	if dk.nervesOfColdSteelActive() {
+		nocsHit = float64(dk.Talents.NervesOfColdSteel)
+	}
+
+	ghoulPetBaseStats := stats.Stats{
+		stats.Agility:     856,
+		stats.Strength:    331,
+		stats.AttackPower: -20,
+
+		stats.MeleeHit:  -nocsHit * core.MeleeHitRatingPerHitChance,
+		stats.Expertise: -nocsHit * PetExpertiseScale * core.ExpertisePerQuarterPercentReduction,
+
+		stats.MeleeCrit: 3.2 * core.CritRatingPerCritChance,
+	}
+
 	ghoulPet := &GhoulPet{
 		Pet: core.NewPet(
 			"Ghoul",
@@ -195,14 +228,6 @@ func (ghoulPet *GhoulPet) disable(sim *core.Simulation) {
 	}
 }
 
-var ghoulPetBaseStats = stats.Stats{
-	stats.Agility:     856,
-	stats.Strength:    331,
-	stats.AttackPower: -20,
-
-	stats.MeleeCrit: 3.2 * core.CritRatingPerCritChance,
-}
-
 const PetExpertiseScale = 3.25
 
 func (dk *Deathknight) ghoulStatInheritance() core.PetStatInheritance {
@@ -214,29 +239,17 @@ func (dk *Deathknight) ghoulStatInheritance() core.PetStatInheritance {
 
 	return func(ownerStats stats.Stats) stats.Stats {
 		ownerHitChance := ownerStats[stats.MeleeHit] / core.MeleeHitRatingPerHitChance
-		hitRatingFromOwner := math.Floor(ownerHitChance) * core.MeleeHitRatingPerHitChance
 
 		return stats.Stats{
 			stats.Stamina:  ownerStats[stats.Stamina] * (glyphBonus + 0.7*ravenousDead),
 			stats.Strength: ownerStats[stats.Strength] * (glyphBonus + 0.7*ravenousDead),
 
-			stats.MeleeHit: hitRatingFromOwner,
-			stats.SpellHit: hitRatingFromOwner,
-
-			stats.Expertise: math.Floor((math.Floor(ownerHitChance) * PetExpertiseScale)) * core.ExpertisePerQuarterPercentReduction,
+			stats.MeleeHit:  ownerHitChance * core.MeleeHitRatingPerHitChance,
+			stats.Expertise: ownerHitChance * PetExpertiseScale * core.ExpertisePerQuarterPercentReduction,
 
 			stats.MeleeHaste: ownerStats[stats.MeleeHaste],
-			stats.SpellHaste: ownerStats[stats.MeleeHaste],
 		}
 	}
-}
-
-var armyGhoulPetBaseStats = stats.Stats{
-	stats.Agility:     856,
-	stats.Strength:    0,
-	stats.AttackPower: -20,
-
-	stats.MeleeCrit: 3.2 * core.CritRatingPerCritChance,
 }
 
 func (dk *Deathknight) armyGhoulStatInheritance() core.PetStatInheritance {
@@ -248,16 +261,13 @@ func (dk *Deathknight) armyGhoulStatInheritance() core.PetStatInheritance {
 
 	return func(ownerStats stats.Stats) stats.Stats {
 		ownerHitChance := ownerStats[stats.MeleeHit] / core.MeleeHitRatingPerHitChance
-		hitRatingFromOwner := math.Floor(ownerHitChance) * core.MeleeHitRatingPerHitChance
 
 		return stats.Stats{
 			stats.Stamina:  ownerStats[stats.Stamina] * (glyphBonus + 0.7*ravenousDead),
 			stats.Strength: ownerStats[stats.Strength] * (glyphBonus + 0.7*ravenousDead) * 0.05,
 
-			stats.MeleeHit: hitRatingFromOwner,
-			stats.SpellHit: hitRatingFromOwner,
-
-			stats.Expertise: math.Floor((math.Floor(ownerHitChance) * PetExpertiseScale)) * core.ExpertisePerQuarterPercentReduction,
+			stats.MeleeHit:  ownerHitChance * core.MeleeHitRatingPerHitChance,
+			stats.Expertise: ownerHitChance * PetExpertiseScale * core.ExpertisePerQuarterPercentReduction,
 
 			stats.MeleeHaste: ownerStats[stats.MeleeHaste],
 			stats.SpellHaste: ownerStats[stats.MeleeHaste],
