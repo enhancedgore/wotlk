@@ -49,7 +49,7 @@ func (dk *DpsDeathknight) RegularPrioPickSpell(sim *core.Simulation, target *cor
 //end of fight functions coming soon
 
 func (dk *DpsDeathknight) RotationActionCallback_EndOfFightCheck(sim *core.Simulation, target *core.Unit, s *deathknight.Sequence) time.Duration {
-	if sim.CurrentTime+10000*time.Millisecond > sim.GetMaxDuration() {
+	if sim.CurrentTime /*+10000*time.Millisecond*/ > sim.GetMaxDuration() {
 		s.Clear().NewAction(dk.RotationActionCallback_EndOfFightPrio)
 	} else {
 		s.Advance()
