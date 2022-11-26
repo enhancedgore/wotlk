@@ -192,8 +192,8 @@ dps_results: {
 dps_results: {
  key: "TestFrost-AllItems-EyeoftheBroodmother-45308"
  value: {
-  dps: 4241.40486
-  tps: 3560.83516
+  dps: 4245.43564
+  tps: 3564.46286
  }
 }
 dps_results: {
@@ -220,8 +220,8 @@ dps_results: {
 dps_results: {
  key: "TestFrost-AllItems-FrostfireGarb"
  value: {
-  dps: 3726.06037
-  tps: 3115.77822
+  dps: 3818.73781
+  tps: 3192.42604
  }
 }
 dps_results: {
@@ -290,8 +290,8 @@ dps_results: {
 dps_results: {
  key: "TestFrost-AllItems-KirinTorGarb"
  value: {
-  dps: 4017.39728
-  tps: 3366.23003
+  dps: 4073.15161
+  tps: 3413.61426
  }
 }
 dps_results: {
@@ -521,8 +521,8 @@ dps_results: {
 dps_results: {
  key: "TestFrost-Average-Default"
  value: {
-  dps: 4385.24702
-  tps: 3684.53687
+  dps: 4377.13085
+  tps: 3677.71826
  }
 }
 dps_results: {
@@ -591,22 +591,22 @@ dps_results: {
 dps_results: {
  key: "TestFrost-Settings-Troll-P1Frost-FrostRotation-NoBuffs-LongMultiTarget"
  value: {
-  dps: 2620.19821
-  tps: 2942.67325
+  dps: 2632.47287
+  tps: 2802.7712
  }
 }
 dps_results: {
  key: "TestFrost-Settings-Troll-P1Frost-FrostRotation-NoBuffs-LongSingleTarget"
  value: {
-  dps: 2620.19821
-  tps: 2197.35315
+  dps: 2632.47287
+  tps: 2201.12206
  }
 }
 dps_results: {
  key: "TestFrost-Settings-Troll-P1Frost-FrostRotation-NoBuffs-ShortSingleTarget"
  value: {
-  dps: 3094.08225
-  tps: 2434.74265
+  dps: 3086.60074
+  tps: 2426.22217
  }
 }
 dps_results: {

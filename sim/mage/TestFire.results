@@ -192,8 +192,8 @@ dps_results: {
 dps_results: {
  key: "TestFire-AllItems-EyeoftheBroodmother-45308"
  value: {
-  dps: 5489.90313
-  tps: 4919.223
+  dps: 5514.08788
+  tps: 4941.63705
  }
 }
 dps_results: {
@@ -220,8 +220,8 @@ dps_results: {
 dps_results: {
  key: "TestFire-AllItems-FrostfireGarb"
  value: {
-  dps: 4798.88866
-  tps: 4297.72198
+  dps: 4921.29143
+  tps: 4400.11045
  }
 }
 dps_results: {
@@ -290,8 +290,8 @@ dps_results: {
 dps_results: {
  key: "TestFire-AllItems-KirinTorGarb"
  value: {
-  dps: 5238.11812
-  tps: 4684.41658
+  dps: 5338.14045
+  tps: 4770.84252
  }
 }
 dps_results: {
@@ -521,8 +521,8 @@ dps_results: {
 dps_results: {
  key: "TestFire-Average-Default"
  value: {
-  dps: 5746.00994
-  tps: 5147.41397
+  dps: 5738.09422
+  tps: 5140.3235
  }
 }
 dps_results: {

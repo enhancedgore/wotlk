@@ -86,8 +86,8 @@ func (party *Party) doneIteration(sim *Simulation) {
 		party.hpsMetrics.Total += agent.GetCharacter().Metrics.hps.Total
 	}
 
-	party.dpsMetrics.doneIteration(sim.rand.GetSeed(), sim.CurrentTime.Seconds())
-	party.hpsMetrics.doneIteration(sim.rand.GetSeed(), sim.CurrentTime.Seconds())
+	party.dpsMetrics.doneIteration(sim.rand.GetSeed(), sim.Duration.Seconds())
+	party.hpsMetrics.doneIteration(sim.rand.GetSeed(), sim.Duration.Seconds())
 }
 
 func (party *Party) GetMetrics(numIterations int32) *proto.PartyMetrics {
@@ -121,6 +121,10 @@ type Raid struct {
 	AllUnits []*Unit // Cached list of all Units (players and pets) in the raid.
 
 	nextPetIndex int32
+
+	replenishmentUnits         []*Unit   // All units who can receive replenishment.
+	curReplenishmentUnits      [][]*Unit // Units that currently have replenishment active, separated by source.
+	leftoverReplenishmentUnits []*Unit   // Units without replenishment currently active.
 }
 
 // Makes a new raid.
@@ -386,6 +390,7 @@ func (raid *Raid) GetPlayerFromUnitIndex(unitIndex int32) Agent {
 }
 
 func (raid *Raid) reset(sim *Simulation) {
+	raid.resetReplenishment(sim)
 	for _, party := range raid.Parties {
 		party.reset(sim)
 	}
@@ -400,8 +405,8 @@ func (raid *Raid) doneIteration(sim *Simulation) {
 		raid.hpsMetrics.Total += party.hpsMetrics.Total
 	}
 
-	raid.dpsMetrics.doneIteration(sim.rand.GetSeed(), sim.CurrentTime.Seconds())
-	raid.hpsMetrics.doneIteration(sim.rand.GetSeed(), sim.CurrentTime.Seconds())
+	raid.dpsMetrics.doneIteration(sim.rand.GetSeed(), sim.Duration.Seconds())
+	raid.hpsMetrics.doneIteration(sim.rand.GetSeed(), sim.Duration.Seconds())
 }
 
 func (raid *Raid) GetMetrics(numIterations int32) *proto.RaidMetrics {

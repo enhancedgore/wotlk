@@ -150,15 +150,15 @@ dps_results: {
 dps_results: {
  key: "TestFeral-AllItems-DreamwalkerBattlegear"
  value: {
-  dps: 6479.91646
-  tps: 4920.90168
+  dps: 6670.65895
+  tps: 5057.7977
  }
 }
 dps_results: {
  key: "TestFeral-AllItems-DreamwalkerGarb"
  value: {
-  dps: 5432.57902
-  tps: 4113.62876
+  dps: 5650.69515
+  tps: 4283.06586
  }
 }
 dps_results: {
@@ -206,8 +206,8 @@ dps_results: {
 dps_results: {
  key: "TestFeral-AllItems-EyeoftheBroodmother-45308"
  value: {
-  dps: 7184.65867
-  tps: 5454.30332
+  dps: 7189.02495
+  tps: 5457.42258
  }
 }
 dps_results: {
@@ -395,15 +395,15 @@ dps_results: {
 dps_results: {
  key: "TestFeral-AllItems-NightsongBattlegear"
  value: {
-  dps: 6648.54204
-  tps: 5031.24729
+  dps: 6777.56256
+  tps: 5137.77718
  }
 }
 dps_results: {
  key: "TestFeral-AllItems-NightsongGarb"
  value: {
-  dps: 5553.83701
-  tps: 4222.87652
+  dps: 5611.91102
+  tps: 4262.95622
  }
 }
 dps_results: {
@@ -647,8 +647,8 @@ dps_results: {
 dps_results: {
  key: "TestFeral-Average-Default"
  value: {
-  dps: 7424.30905
-  tps: 5641.7667
+  dps: 7423.20692
+  tps: 5640.92913
  }
 }
 dps_results: {

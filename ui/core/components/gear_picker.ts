@@ -33,6 +33,7 @@ import { makeShowMatchingGemsSelector } from './other_inputs.js';
 
 declare var $: any;
 declare var tippy: any;
+declare var WowSim: any;
 
 export class GearPicker extends Component {
 	// ItemSlot is used as the index
@@ -153,6 +154,16 @@ class ItemPicker extends Component {
 				this.player.setWowheadData(this._equippedItem, this.iconElem);
 			}
 		});
+
+		// Use hacky wowhead xhr override to 'preprocess' tooltips
+		WowSim.WhOnLoadHook = (a:any) => {
+			if (a.tooltip) {
+				// This fixes wowhead being able to parse 'pcs' aka set bonus highlighting in tooltip
+				// Their internal regex looks for 'href="/item=' but for wotlk we get 'href="/wotlk/item="'
+				a.tooltip = (<String>a.tooltip).replaceAll("href=\"/wotlk/item", "href=\"/item");
+			}
+			return a;
+		}
 	}
 
 	set item(newItem: EquippedItem | null) {
@@ -392,6 +403,7 @@ class SelectorModal extends Popup {
 					};
 
 					this.player.gearChangeEmitter.on(updateGemIcon);
+					this.addOnDisposeCallback(() => this.player.gearChangeEmitter.off(updateGemIcon));
 					updateGemIcon();
 				});
 		});
@@ -431,11 +443,26 @@ class SelectorModal extends Popup {
 			});
 		}
 
-		const tabElem = document.createElement('li');
-		this.tabsElem.appendChild(tabElem);
 		const tabContentId = (label + '-tab').split(' ').join('');
-		tabElem.innerHTML = `<a class="selector-modal-item-tab" data-toggle="tab" href="#${tabContentId}"></a>`;
+		const selected = label === 'Items';
 
+		const tabFragment = document.createElement('fragment');
+		tabFragment.innerHTML = `
+			<li class="nav-item">
+				<a
+					class="nav-link selector-modal-item-tab ${selected ? 'active' : ''}"
+					data-content-id="${tabContentId}"
+					data-bs-toggle="tab"
+					data-bs-target="#${tabContentId}"
+					type="button"
+					role="tab"
+					aria-controls="${tabContentId}"
+					aria-selected="${selected}"
+				></a>
+			</li>
+		`;
+
+		const tabElem = tabFragment.children[0] as HTMLElement;
 		const tabAnchor = tabElem.getElementsByClassName('selector-modal-item-tab')[0] as HTMLAnchorElement;
 		tabAnchor.dataset.label = label;
 		if (setTabContent) {
@@ -444,27 +471,35 @@ class SelectorModal extends Popup {
 			tabAnchor.textContent = label;
 		}
 
-		const tabContent = document.createElement('div');
-		tabContent.id = tabContentId;
-		tabContent.classList.add('tab-pane', 'fade', 'selector-modal-tab-content');
+		this.tabsElem.appendChild(tabElem);
+
+		const tabContentFragment = document.createElement('fragment');
+		tabContentFragment.innerHTML = `
+			<div
+				id="${tabContentId}"
+				class="selector-modal-tab-pane tab-pane fade ${selected ? 'active show' : ''}"
+			>
+				<div class="selector-modal-tab-content-header">
+					<button class="selector-modal-remove-button sim-button">Remove</button>
+					<input class="selector-modal-search" type="text" placeholder="Search...">
+					<div class="selector-modal-filter-bar-filler"></div>
+					<div class="sim-input selector-modal-boolean-option selector-modal-show-1h-weapons"></div>
+					<div class="sim-input selector-modal-boolean-option selector-modal-show-2h-weapons"></div>
+					<div class="sim-input selector-modal-boolean-option selector-modal-show-matching-gems"></div>
+					<div class="selector-modal-phase-selector"></div>
+					<button class="selector-modal-filters-button sim-button">Filters</button>
+				</div>
+				<div style="width: 100%;height: 30px;font-size: 18px;">
+					<span style="float:left">Item</span>
+					<span style="float:right">EP(+/-)<span class="ep-help fas fa-search" style="font-size:10px"></span></span>
+				</div>
+				<ul class="selector-modal-list"></ul>
+			</div>
+		`;
+		
+		const tabContent = tabContentFragment.children[0] as HTMLElement;
+
 		this.contentElem.appendChild(tabContent);
-		tabContent.innerHTML = `
-    <div class="selector-modal-tab-content-header">
-      <button class="selector-modal-remove-button sim-button">Remove</button>
-      <input class="selector-modal-search" type="text" placeholder="Search...">
-      <div class="selector-modal-filter-bar-filler"></div>
-      <div class="sim-input selector-modal-boolean-option selector-modal-show-1h-weapons"></div>
-      <div class="sim-input selector-modal-boolean-option selector-modal-show-2h-weapons"></div>
-      <div class="sim-input selector-modal-boolean-option selector-modal-show-matching-gems"></div>
-      <div class="selector-modal-phase-selector"></div>
-      <button class="selector-modal-filters-button sim-button">Filters</button>
-    </div>
-		<div style="width: 100%;height: 30px;font-size: 18px;">
-			<span style="float:left">Item</span>
-			<span style="float:right">EP(+/-)<span class="ep-help fas fa-search" style="font-size:10px"></span></span>
-		</div>
-    <ul class="selector-modal-list"></ul>
-    `;
 
 		const helpIcon = tabContent.getElementsByClassName("ep-help").item(0);
 		tippy(helpIcon, {'content': 'These values are computed using stat weights which can be edited using the "Stat Weights" button.'});
@@ -496,6 +531,7 @@ class SelectorModal extends Popup {
 
 		const listElem = tabContent.getElementsByClassName('selector-modal-list')[0] as HTMLElement;
 		const initialFilters = this.player.sim.getFilters();
+		let lastFavElem: HTMLElement|null = null;
 
 		const listItemElems = itemData.map((itemData, itemIdx) => {
 			const item = itemData.item;
@@ -636,7 +672,12 @@ class SelectorModal extends Popup {
 			if (isFavorite) {
 				favoriteElem.classList.add('fa-solid');
 				listItemElem.dataset.fav = 'true';
-				listElem.prepend(listItemElem);
+				if (lastFavElem == null) {
+					listElem.prepend(listItemElem);
+				} else {
+					lastFavElem.after(listItemElem)
+				}
+				lastFavElem = listItemElem;
 			} else {
 				favoriteElem.classList.add('fa-regular');
 				listItemElem.dataset.fav = 'false';
@@ -676,8 +717,9 @@ class SelectorModal extends Popup {
 				}
 			});
 		};
-		updateSelected();
 		this.player.gearChangeEmitter.on(updateSelected);
+		this.addOnDisposeCallback(() => this.player.gearChangeEmitter.off(updateSelected));
+		updateSelected();
 
 		const applyFilters = () => {
 			let validItemElems = listItemElems;
@@ -759,9 +801,11 @@ class SelectorModal extends Popup {
 
 		this.player.sim.phaseChangeEmitter.on(applyFilters);
 		this.player.sim.filtersChangeEmitter.on(applyFilters);
-		this.player.gearChangeEmitter.on(() => {
-			applyFilters();
-			updateSelected();
+		this.player.gearChangeEmitter.on(applyFilters);
+		this.addOnDisposeCallback(() => {
+			this.player.sim.phaseChangeEmitter.off(applyFilters);
+			this.player.sim.filtersChangeEmitter.off(applyFilters);
+			this.player.gearChangeEmitter.off(applyFilters);
 		});
 
 		applyFilters();
@@ -772,7 +816,7 @@ class SelectorModal extends Popup {
 			.filter(tab => tab.dataset.label.includes(labelSubstring));
 
 		const contentElems = tabElems
-			.map(tabElem => document.getElementById(tabElem.getAttribute('href').substring(1)))
+			.map(tabElem => document.getElementById(tabElem.dataset.contentId!.substring(1)))
 			.filter(tabElem => Boolean(tabElem));
 
 		tabElems.forEach(elem => elem.parentElement.remove());
