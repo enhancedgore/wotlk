@@ -10,7 +10,6 @@ import (
 func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_TrySequence(sim *core.Simulation, target *core.Unit, s *deathknight.Sequence) time.Duration {
 	UACheck := false
 	EOFCheck := false
-
 	UACheck = dk.FrostSubBlood_UACheck(sim, target, s)
 	EOFCheck = dk.FrostSubBlood_EOFCheck(sim, target, s)
 
@@ -31,7 +30,11 @@ func (dk *DpsDeathknight) FrostSubBlood_UACheck(sim *core.Simulation, target *co
 
 // EOF check
 func (dk *DpsDeathknight) FrostSubBlood_EOFCheck(sim *core.Simulation, target *core.Unit, s *deathknight.Sequence) bool {
-	return false
+	if sim.CurrentTime+7000*time.Millisecond > sim.GetMaxDuration() {
+		return true
+	} else {
+		return false
+	}
 }
 
 // Normal rotation
@@ -93,7 +96,7 @@ func (dk *DpsDeathknight) FrostSubBlood_runeTimeCheck(sim *core.Simulation, targ
 			}
 		}
 	}
-
+	s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
 	return casted
 }
 
@@ -106,16 +109,19 @@ func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_NormalPrio(sim *c
 
 	if diseaseExpiresAt < sim.CurrentTime+5*time.Second && dk.Pestilence.CanCast(sim) { //no rune grace yet
 		dk.Pestilence.Cast(sim, target)
+		s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
 		return sim.CurrentTime
 	} else if dk.Obliterate.CanCast(sim) && dk.CurrentFrostRunes() >= 1 && dk.CurrentUnholyRunes() >= 1 {
 		dk.Obliterate.Cast(sim, target)
+		s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
 		return sim.CurrentTime
-	} else if dk.BloodStrike.CanCast(sim) && dk.CurrentRunicPower() < 100 { //100 is arbitrary for now, it should be changed to max - 2 oblit - 1 bs
+	} else if dk.BloodStrike.CanCast(sim) && dk.CurrentRunicPower() < 100 && (dk.CurrentBloodRunes()+dk.CurrentDeathRunes() > 1) { //100 is arbitrary for now, it should be changed to max - 2 oblit - 1 bs
 		dk.BloodStrike.Cast(sim, target)
+		s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
 		return sim.CurrentTime
 	} else if dk.FrostSubBlood_runeTimeCheck(sim, target, s) {
 		return sim.CurrentTime
 	}
-
+	s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
 	return -1
 }
