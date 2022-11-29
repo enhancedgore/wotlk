@@ -430,6 +430,7 @@ func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_RecoverFromPestiM
 	return sim.CurrentTime
 }
 
+// if diseases are down, recover sequence, otherwise pesti until it lands, if diseases expires again, recover sequence
 func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_Sequence_Pesti(sim *core.Simulation, target *core.Unit, s *deathknight.Sequence) time.Duration {
 	casted := false
 	waitUntil := time.Duration(-1)
