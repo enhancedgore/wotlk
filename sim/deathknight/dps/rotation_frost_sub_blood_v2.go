@@ -107,7 +107,7 @@ func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_NormalPrio(sim *c
 
 	dk.RunicPowerBar.CopyRunicPowerBar()
 
-	if diseaseExpiresAt < sim.CurrentTime+5*time.Second && dk.Pestilence.CanCast(sim) { //no rune grace yet
+	if diseaseExpiresAt < sim.CurrentTime+4*time.Second && dk.Pestilence.CanCast(sim) { //no rune grace yet
 		dk.Pestilence.Cast(sim, target)
 		s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
 		return sim.CurrentTime
@@ -115,7 +115,7 @@ func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_NormalPrio(sim *c
 		dk.Obliterate.Cast(sim, target)
 		s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
 		return sim.CurrentTime
-	} else if dk.BloodStrike.CanCast(sim) && dk.CurrentRunicPower() < 100 && (dk.CurrentBloodRunes()+dk.CurrentDeathRunes() > 1) { //100 is arbitrary for now, it should be changed to max - 2 oblit - 1 bs
+	} else if dk.BloodStrike.CanCast(sim) && dk.CurrentRunicPower() < 70 && (dk.CurrentBloodRunes()+dk.CurrentDeathRunes() > 1 || diseaseExpiresAt > 10*time.Second+sim.CurrentTime) { //100 is arbitrary for now, it should be changed to max - 2 oblit - 1 bs
 		dk.BloodStrike.Cast(sim, target)
 		s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
 		return sim.CurrentTime
