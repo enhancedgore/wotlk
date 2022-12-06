@@ -30,7 +30,7 @@ func (dk *DpsDeathknight) FrostSubBlood_UACheck(sim *core.Simulation, target *co
 
 // EOF check
 func (dk *DpsDeathknight) FrostSubBlood_EOFCheck(sim *core.Simulation, target *core.Unit, s *deathknight.Sequence) bool {
-	if sim.CurrentTime+7000*time.Millisecond > sim.GetMaxDuration() {
+	if sim.CurrentTime+7000*time.Millisecond > sim.CurrentTime+sim.GetRemainingDuration() {
 		return true
 	} else {
 		return false
