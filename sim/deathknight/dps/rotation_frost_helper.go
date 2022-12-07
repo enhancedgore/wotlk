@@ -53,7 +53,7 @@ func (dk *DpsDeathknight) RotationActionCallback_EndOfFightCheck(sim *core.Simul
 	//I didn't optimise for past 100s because it's a really minscule improvement and would require tons more conditions.
 	simDur := sim.CurrentTime + sim.GetRemainingDuration()
 
-	if sim.CurrentTime+7000*time.Millisecond > simDur && simDur < 100*time.Second {
+	if sim.CurrentTime+7000*time.Millisecond > simDur && simDur < 150*time.Second {
 		s.Clear().NewAction(dk.RotationActionCallback_EndOfFightPrio)
 	} else {
 		s.Advance()
@@ -88,8 +88,18 @@ func (dk *DpsDeathknight) RotationActionCallback_EndOfFightPrio(sim *core.Simula
 	if dk.Talents.Epidemic == 2 || diseaseExpiresAt >= simDur {
 		obAt = core.MinDuration(obAt, bothblAt)
 	}
-
-	if diseaseExpiresAt >= simDur { //diseases last until end of fight
+	if simTimeLeft < 1*abGcd && obAt < simDur {
+		s.Clear().
+			NewAction(dk.RotationActionCallback_FrostSubUnh_EndOfFight_Obli)
+	} else if simTimeLeft < 2*abGcd && obAt+1*abGcd < simDur {
+		s.Clear().
+			NewAction(dk.RotationActionCallback_FrostSubUnh_EndOfFight_Obli).
+			NewAction(dk.RotationActionCallback_EndOfFightCheck)
+	} else if simTimeLeft < 3*abGcd && obAt+2*abGcd < simDur {
+		s.Clear().
+			NewAction(dk.RotationActionCallback_FrostSubUnh_EndOfFight_Obli).
+			NewAction(dk.RotationActionCallback_EndOfFightCheck)
+	} else if diseaseExpiresAt >= simDur { //diseases last until end of fight
 		if sim.CurrentTime >= obAt { //have runes to oblit
 			s.Clear().
 				NewAction(dk.RotationActionCallback_FrostSubUnh_EndOfFight_Obli).
@@ -218,13 +228,21 @@ func (dk *DpsDeathknight) RotationActionCallback_EndOfFightPrio(sim *core.Simula
 			dk.WaitUntil(sim, obAt)
 			s.NewAction(dk.RotationActionCallback_EndOfFightCheck)
 		}
-	} else if sim.CurrentTime+2*abGcd > diseaseExpiresAt && !spellHitcap { //if u can only fit 1 spGcd + 1 abGcd before disease falls, do pesti first as it might miss
+	} else if sim.CurrentTime+2*abGcd >= diseaseExpiresAt { //if u can only fit 1 spGcd + 1 abGcd before disease falls, do pesti first as it might miss
 		s.Clear().
 			NewAction(dk.RotationActionCallback_Pesti).
 			NewAction(dk.RotationActionCallback_EndOfFightCheck)
-	} else if sim.CurrentTime+1*abGcd > diseaseExpiresAt && spellHitcap { //if u can only fit 1 spGcd before disease falls, and have hit cap
+	} else if dk.Obliterate.CanCast(sim) && simTimeLeft < 2*abGcd {
 		s.Clear().
-			NewAction(dk.RotationActionCallback_Pesti).
+			NewAction(dk.RotationActionCallback_FrostSubUnh_EndOfFight_Obli).
+			NewAction(dk.RotationActionCallback_EndOfFightCheck)
+	} else if dk.FrostStrike.CanCast(sim) && simTimeLeft < 2*abGcd {
+		s.Clear().
+			NewAction(dk.RotationActionCallback_FS).
+			NewAction(dk.RotationActionCallback_EndOfFightCheck)
+	} else if dk.Rime() && simTimeLeft < 2*abGcd {
+		s.Clear().
+			NewAction(dk.RotationActionCallback_HB).
 			NewAction(dk.RotationActionCallback_EndOfFightCheck)
 	} else {
 		return -1

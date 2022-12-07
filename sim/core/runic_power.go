@@ -369,6 +369,9 @@ func (rp *RunicPowerBar) BloodDeathRuneBothReadyAt() time.Duration {
 		return -1
 	}
 }
+func (rp *RunicPowerBar) RuneReadyAt(slot int8) time.Duration {
+	return rp.runeMeta[slot].regenAt
+}
 
 func (rp *RunicPowerBar) BloodRuneReadyAt(sim *Simulation) time.Duration {
 	if rp.runeStates&anyBloodSpent != anyBloodSpent { // if any are not spent
