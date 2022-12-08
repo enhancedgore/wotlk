@@ -14,7 +14,13 @@ func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_TrySequence(sim *
 	EOFCheck = dk.FrostSubBlood_EOFCheck(sim, target, s)
 
 	if UACheck {
-		s.Clear().NewAction(dk.RotationActionCallback_UA_Frost).NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
+		if dk.UnbreakableArmor.IsReady(sim) && (dk.CurrentBloodRunes() >= 1 || dk.CurrentDeathRunes() >= 1) {
+			//use UA now
+			s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_UA_Now)
+		} else if dk.UnbreakableArmor.TimeToReady(sim) <= 10*time.Second {
+			//prep UA now, set a new variable for UA prep and do not allow pesti
+			s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_NormalPrio)
+		}
 	} else if EOFCheck {
 		s.Clear().NewAction(dk.RotationActionCallback_EndOfFightPrio)
 	} else {
@@ -25,7 +31,7 @@ func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_TrySequence(sim *
 
 // UA check
 func (dk *DpsDeathknight) FrostSubBlood_UACheck(sim *core.Simulation, target *core.Unit, s *deathknight.Sequence) bool {
-	if dk.UnbreakableArmor.IsReady(sim) && (dk.CurrentBloodRunes() >= 1 || dk.CurrentDeathRunes() >= 1) {
+	if (dk.UnbreakableArmor.IsReady(sim) && (dk.CurrentBloodRunes()+dk.CurrentDeathRunes() > 1)) || dk.UnbreakableArmor.TimeToReady(sim) <= 10*time.Second {
 		return true
 	}
 	return false
@@ -38,6 +44,14 @@ func (dk *DpsDeathknight) FrostSubBlood_EOFCheck(sim *core.Simulation, target *c
 	} else {
 		return false
 	}
+}
+
+func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_UA_Now(sim *core.Simulation, target *core.Unit, s *deathknight.Sequence) time.Duration {
+	s.Clear().
+		NewAction(dk.RotationActionCallback_UA_Frost).
+		NewAction(dk.RotationActionCallback_Pesti).
+		NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
+	return sim.CurrentTime
 }
 
 // Normal rotation
