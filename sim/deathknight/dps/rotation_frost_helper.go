@@ -53,7 +53,7 @@ func (dk *DpsDeathknight) RotationActionCallback_EndOfFightCheck(sim *core.Simul
 	//I didn't optimise for past 100s because it's a really minscule improvement and would require tons more conditions.
 	simDur := sim.CurrentTime + sim.GetRemainingDuration()
 
-	if sim.CurrentTime+7000*time.Millisecond > simDur && simDur < 150*time.Second {
+	if sim.CurrentTime+7000*time.Millisecond > simDur && simDur < 222*time.Second {
 		s.Clear().NewAction(dk.RotationActionCallback_EndOfFightPrio)
 	} else {
 		s.Advance()
@@ -87,6 +87,13 @@ func (dk *DpsDeathknight) RotationActionCallback_EndOfFightPrio(sim *core.Simula
 
 	if dk.Talents.Epidemic == 2 || diseaseExpiresAt >= simDur {
 		obAt = core.MinDuration(obAt, bothblAt)
+	}
+	if dk.CurrentDeathRunes() >= 1 && dk.BloodTap.CanCast(sim) {
+		s.Clear().
+			NewAction(dk.RotationActionCallback_UA_Frost).
+			NewAction(dk.RotationActionCallback_BT).
+			NewAction(dk.RotationActionCallback_EndOfFightCheck)
+		return sim.CurrentTime
 	}
 	if simTimeLeft < 1*abGcd && obAt < simDur {
 		s.Clear().

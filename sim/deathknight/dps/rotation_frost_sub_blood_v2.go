@@ -37,7 +37,11 @@ var UAsoon bool = false
 
 // UA check
 func (dk *DpsDeathknight) FrostSubBlood_UACheck(sim *core.Simulation, target *core.Unit, s *deathknight.Sequence) bool {
-	if dk.UnbreakableArmor.IsReady(sim) && (dk.CurrentBloodRunes()+dk.CurrentDeathRunes() > 1) /*|| dk.UnbreakableArmor.TimeToReady(sim) <= 10*time.Second*/ {
+	bothblAt := dk.BloodDeathRuneBothReadyAt()
+	ffExpiresAt := dk.FrostFeverDisease[target.Index].ExpiresAt()
+	bpExpiresAt := dk.BloodPlagueDisease[target.Index].ExpiresAt()
+	diseaseExpiresAt := core.MinDuration(ffExpiresAt, bpExpiresAt)
+	if dk.UnbreakableArmor.IsReady(sim) && (dk.CurrentBloodRunes()+dk.CurrentDeathRunes() > 1) || dk.UnbreakableArmor.TimeToReady(sim)+sim.CurrentTime < diseaseExpiresAt && dk.UnbreakableArmor.TimeToReady(sim)+sim.CurrentTime > bothblAt {
 		return true
 	}
 	return false
