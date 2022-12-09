@@ -12,26 +12,32 @@ func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_TrySequence(sim *
 	EOFCheck := false
 	UACheck = dk.FrostSubBlood_UACheck(sim, target, s)
 	EOFCheck = dk.FrostSubBlood_EOFCheck(sim, target, s)
+	bothblAt := dk.BloodDeathRuneBothReadyAt()
+	ffExpiresAt := dk.FrostFeverDisease[target.Index].ExpiresAt()
+	bpExpiresAt := dk.BloodPlagueDisease[target.Index].ExpiresAt()
+	diseaseExpiresAt := core.MinDuration(ffExpiresAt, bpExpiresAt)
 
-	if UACheck {
+	if EOFCheck {
+		s.Clear().NewAction(dk.RotationActionCallback_EndOfFightPrio)
+	} else if UACheck {
 		if dk.UnbreakableArmor.IsReady(sim) && (dk.CurrentBloodRunes() >= 1 || dk.CurrentDeathRunes() >= 1) {
 			//use UA now
 			s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_UA_Now)
-		} else if dk.UnbreakableArmor.TimeToReady(sim) <= 10*time.Second {
-			//prep UA now, set a new variable for UA prep and do not allow pesti
+		} else if dk.UnbreakableArmor.TimeToReady(sim)+sim.CurrentTime < diseaseExpiresAt && dk.UnbreakableArmor.TimeToReady(sim)+sim.CurrentTime > bothblAt {
+			UAsoon = true
 			s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_NormalPrio)
 		}
-	} else if EOFCheck {
-		s.Clear().NewAction(dk.RotationActionCallback_EndOfFightPrio)
 	} else {
 		s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_NormalPrio)
 	}
 	return sim.CurrentTime
 }
 
+var UAsoon bool = false
+
 // UA check
 func (dk *DpsDeathknight) FrostSubBlood_UACheck(sim *core.Simulation, target *core.Unit, s *deathknight.Sequence) bool {
-	if (dk.UnbreakableArmor.IsReady(sim) && (dk.CurrentBloodRunes()+dk.CurrentDeathRunes() > 1)) || dk.UnbreakableArmor.TimeToReady(sim) <= 10*time.Second {
+	if dk.UnbreakableArmor.IsReady(sim) && (dk.CurrentBloodRunes()+dk.CurrentDeathRunes() > 1) /*|| dk.UnbreakableArmor.TimeToReady(sim) <= 10*time.Second*/ {
 		return true
 	}
 	return false
@@ -130,7 +136,7 @@ func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_NormalPrio(sim *c
 
 	dk.RunicPowerBar.CopyRunicPowerBar()
 
-	if diseaseExpiresAt < sim.CurrentTime+4*time.Second && dk.Pestilence.CanCast(sim) { //no rune grace yet
+	if diseaseExpiresAt < sim.CurrentTime+4*time.Second && dk.Pestilence.CanCast(sim) && !UAsoon { //no rune grace yet
 		dk.Pestilence.Cast(sim, target)
 		s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
 		return sim.CurrentTime
@@ -138,7 +144,7 @@ func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_NormalPrio(sim *c
 		dk.Obliterate.Cast(sim, target)
 		s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
 		return sim.CurrentTime
-	} else if dk.BloodStrike.CanCast(sim) && dk.CurrentRunicPower() < 70 && (dk.CurrentBloodRunes()+dk.CurrentDeathRunes() > 1 || diseaseExpiresAt > 10*time.Second+sim.CurrentTime) && (sim.CurrentTime+abGcd < obAt+delayAmount) { //70 is arbitrary for now, it should be changed to max - 2 oblit - 1 bs
+	} else if dk.BloodStrike.CanCast(sim) && dk.CurrentRunicPower() < 70 && (dk.CurrentBloodRunes()+dk.CurrentDeathRunes() > 1 || diseaseExpiresAt > 10*time.Second+sim.CurrentTime) && (sim.CurrentTime+abGcd < obAt+delayAmount) && !UAsoon { //70 is arbitrary for now, it should be changed to max - 2 oblit - 1 bs
 		dk.BloodStrike.Cast(sim, target)
 		s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
 		return sim.CurrentTime
