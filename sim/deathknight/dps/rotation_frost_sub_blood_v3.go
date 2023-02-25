@@ -7,9 +7,12 @@ import (
 	"github.com/wowsims/wotlk/sim/deathknight"
 )
 
+var UAsoon bool = false
+
 func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_TrySequence(sim *core.Simulation, target *core.Unit, s *deathknight.Sequence) time.Duration {
 	UACheck := false
 	EOFCheck := false
+	UAsoon = false
 	UACheck = dk.FrostSubBlood_UACheck(sim, target, s)
 	EOFCheck = dk.FrostSubBlood_EOFCheck(sim, target, s)
 	bothblAt := dk.BloodDeathRuneBothReadyAt()
@@ -32,8 +35,6 @@ func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_TrySequence(sim *
 	}
 	return sim.CurrentTime
 }
-
-var UAsoon bool = false
 
 // UA check
 func (dk *DpsDeathknight) FrostSubBlood_UACheck(sim *core.Simulation, target *core.Unit, s *deathknight.Sequence) bool {
@@ -70,7 +71,7 @@ func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_Rotation(sim *cor
 	return sim.CurrentTime
 }
 
-func (dk *DpsDeathknight) setupFrostSubBloodERWOpener_v2() {
+func (dk *DpsDeathknight) setupFrostSubBloodERWOpener_v3() {
 	dk.setupUnbreakableArmorCooldowns()
 
 	dk.RotationSequence.
@@ -139,10 +140,13 @@ func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_NormalPrio(sim *c
 	delayAmount := 2501 * time.Millisecond
 
 	dk.RunicPowerBar.CopyRunicPowerBar()
-
+	Time := sim.CurrentTime
+	UAState := !UAsoon
 	if diseaseExpiresAt < sim.CurrentTime+4*time.Second && dk.Pestilence.CanCast(sim, nil) && !UAsoon { //no rune grace yet
 		dk.Pestilence.Cast(sim, target)
 		s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
+		println(Time)
+		println(UAState)
 		return sim.CurrentTime
 	} else if dk.Obliterate.CanCast(sim, nil) && dk.CurrentFrostRunes() >= 1 && dk.CurrentUnholyRunes() >= 1 {
 		dk.Obliterate.Cast(sim, target)
