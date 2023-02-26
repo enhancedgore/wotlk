@@ -178,7 +178,7 @@ func (dk *DpsDeathknight) RotationActionCallback_FrostSubBlood_NormalPrio(sim *c
 		dk.BloodStrike.Cast(sim, target)
 		s.Clear().NewAction(dk.RotationActionCallback_FrostSubBlood_TrySequence)
 		return sim.CurrentTime
-	} else if dk.BloodStrike.CanCast(sim, nil) && dk.UnbreakableArmorAura.IsActive() && dk.UnbreakableArmorAura.RemainingDuration()+sim.CurrentTime > 10*time.Second+bothblAt {
+	} else if dk.BloodStrike.CanCast(sim, nil) && dk.UnbreakableArmorAura.IsActive() && dk.UnbreakableArmorAura.RemainingDuration(sim)+sim.CurrentTime > 10*time.Second+bothblAt {
 		dk.BloodStrike.Cast(sim, target)
 		s.Clear().
 			NewAction(dk.RotationActionCallback_Pesti).
