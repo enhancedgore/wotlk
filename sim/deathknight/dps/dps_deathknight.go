@@ -170,7 +170,7 @@ func (dk *DpsDeathknight) SetupRotations() {
 				if dk.Rotation.DesyncRotation {
 					dk.setupFrostSubBloodDesyncOpener()
 				} else if dk.Rotation.UseEmpowerRuneWeapon {
-					dk.setupFrostSubBloodERWOpener()
+					dk.setupFrostSubBloodERWOpener_v3()
 				} else {
 					dk.setupFrostSubBloodNoERWOpener()
 				}
